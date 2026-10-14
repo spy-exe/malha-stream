@@ -30,6 +30,12 @@ jobs:
           set -o pipefail
           mkdir -p evidence
           ./gradlew --no-daemon --max-workers=2 :telemetry:check 2>&1 | tee evidence/tests.log
+      - name: Benchmark analysis tests and coverage
+        run: |
+          python3 -m pip install coverage==7.13.4
+          python3 -m coverage run --source=benchmark.analysis -m unittest discover -s tests -v
+          python3 -m coverage report --fail-under=85
+          python3 -m coverage xml -o evidence/python-coverage.xml
       - name: APK and lint
         shell: bash
         run: |
