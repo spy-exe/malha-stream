@@ -30,7 +30,7 @@ public class BenchmarkActivity extends Activity {
                         .putString("video_format", "h264".equals(codec) ? "neverh265" : "forceh265")
                         .putString("malha_profile", profile).putBoolean("malha_diagnostics", true)
                         .putBoolean("checkbox_enable_hdr", false);
-                if (!"upstream".equals(profile)) prefs.putString("frame_pacing", "balanced".equals(profile) ? "balanced" : "latency");
+                prefs.putString("frame_pacing", "balanced".equals(profile) ? "balanced" : "latency");
                 prefs.apply();
             }
         }

@@ -74,6 +74,8 @@ public final class DiagnosticSession {
                 .put("device", Build.DEVICE).put("hardware", Build.HARDWARE).put("board", Build.BOARD)
                 .put("android_api", Build.VERSION.SDK_INT).put("android_release", Build.VERSION.RELEASE)
                 .put("display_hz_at_start", activity.getWindowManager().getDefaultDisplay().getRefreshRate())
+                .put("display_hz_origin", "Android Display.getRefreshRate; driver-reported, not measured externally")
+                .put("measured_display_hz", JSONObject.NULL)
                 .put("visible_fps", JSONObject.NULL).put("chip_temperature_c", JSONObject.NULL)
                 .put("surface_render_note", "Callback is informational, may be delayed/batched/missing; does not prove visible photons")
                 .put("native_receive_note", "Native client assembly duration only; not one-way network latency")
@@ -135,6 +137,8 @@ public final class DiagnosticSession {
             try {
                 metadata.put("selected_decoder", codec.getName()).put("codec", format.getString(MediaFormat.KEY_MIME))
                         .put("configured_format", format.toString()).put("codec_generation", generation)
+                        .put("configured_hdr_transfer", format.containsKey("color-transfer")
+                                ? format.getInteger("color-transfer") : JSONObject.NULL)
                         .put("display_hz_after_config", activity.getWindowManager().getDefaultDisplay().getRefreshRate());
             } catch (Exception ignored) { record("metadata_failure", 0, generation); }
         }
