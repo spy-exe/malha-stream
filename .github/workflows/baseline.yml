@@ -1,0 +1,40 @@
+name: Upstream baseline
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: b48494cb96bff23d8886c4775cc4f39a1075495d
+          submodules: recursive
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned Android toolchain
+        run: sdkmanager 'platforms;android-37' 'build-tools;36.0.0' 'ndk;29.0.14206865'
+      - name: Build unchanged upstream
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p evidence
+          git rev-parse HEAD > evidence/source-commit.txt
+          git submodule status --recursive > evidence/submodules.txt
+          java -version 2> evidence/java-version.txt
+          ./gradlew --no-daemon --max-workers=2 :app:assembleNonRootDebug :app:lintNonRootDebug 2>&1 | tee evidence/baseline-build.log
+          sha256sum app/build/outputs/apk/nonRoot/debug/*.apk > evidence/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: upstream-baseline
+          path: |
+            evidence/
+            app/build/outputs/apk/nonRoot/debug/*.apk
+            app/build/reports/lint-results*
+          retention-days: 30
