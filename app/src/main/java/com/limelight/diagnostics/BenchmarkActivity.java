@@ -23,12 +23,14 @@ public class BenchmarkActivity extends Activity {
             if (("1920x1080".equals(resolution) || "1280x720".equals(resolution))
                     && ("h264".equals(codec) || "hevc".equals(codec)) && fps == 60
                     && bitrate >= 500 && bitrate <= 150000
-                    && ("upstream".equals(profile) || "lowest-latency".equals(profile) || "balanced".equals(profile))) {
+                    && ("upstream".equals(profile) || "lowest-latency".equals(profile) || "balanced".equals(profile)
+                        || ("amlogic-hevc-no-low-latency".equals(profile) && "hevc".equals(codec)))) {
                 SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(this).edit()
                         .putString("list_resolution", resolution).putString("list_fps", "60")
                         .putInt("seekbar_bitrate_kbps", bitrate)
                         .putString("video_format", "h264".equals(codec) ? "neverh265" : "forceh265")
                         .putString("malha_profile", profile).putBoolean("malha_diagnostics", true)
+                        .putBoolean("malha_amlogic_hevc_experiment", "amlogic-hevc-no-low-latency".equals(profile))
                         .putBoolean("checkbox_enable_hdr", false);
                 prefs.putString("frame_pacing", "balanced".equals(profile) ? "balanced" : "latency");
                 prefs.apply();

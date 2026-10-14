@@ -41,6 +41,7 @@ import android.view.SurfaceHolder;
 public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements Choreographer.FrameCallback {
 
     private final DiagnosticSession diagnostics;
+    private final boolean decoderExperimentRequested;
 
     private static final boolean USE_FRAME_RENDER_TIME = false;
     private static final boolean FRAME_RENDER_TIME_ONLY = USE_FRAME_RENDER_TIME && false;
@@ -286,6 +287,9 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         this.activity = activity;
         this.prefs = prefs;
         this.diagnostics = DiagnosticSession.begin(activity, prefs);
+        this.decoderExperimentRequested = BuildConfig.MALHA_DIAGNOSTICS
+                && android.preference.PreferenceManager.getDefaultSharedPreferences(activity)
+                .getBoolean("malha_amlogic_hevc_experiment", false);
         this.crashListener = crashListener;
         this.consecutiveCrashCount = consecutiveCrashCount;
         this.glRenderer = glRenderer;
@@ -648,7 +652,11 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             MediaFormat mediaFormat = createBaseMediaFormat(mimeType);
 
             // This will try low latency options until we find one that works (or we give up).
-            boolean newFormat = MediaCodecHelper.setDecoderLowLatencyOptions(mediaFormat, selectedDecoderInfo, tryNumber);
+            boolean skipLowLatency = com.malhastream.telemetry.DecoderExperimentPolicy.skipLowLatency(
+                    Build.MODEL, Build.VERSION.SDK_INT, selectedDecoderInfo.getName(), mimeType, decoderExperimentRequested);
+            boolean newFormat = !skipLowLatency
+                    && MediaCodecHelper.setDecoderLowLatencyOptions(mediaFormat, selectedDecoderInfo, tryNumber);
+            if (skipLowLatency && diagnostics != null) diagnostics.record("experiment_low_latency_skipped", 0, 1);
 
             // Throw the underlying codec exception on the last attempt if the caller requested it
             if (tryConfigureDecoder(selectedDecoderInfo, mediaFormat, !newFormat && throwOnCodecError)) {

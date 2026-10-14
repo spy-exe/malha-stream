@@ -70,6 +70,8 @@ public final class DiagnosticSession {
                 .put("bitrate_kbps", prefs.bitrate).put("hdr", prefs.enableHdr)
                 .put("frame_pacing", prefs.framePacing).put("requested_codec", prefs.videoFormat.name())
                 .put("profile", PreferenceManager.getDefaultSharedPreferences(activity).getString("malha_profile", "upstream"))
+                .put("amlogic_experiment_requested", PreferenceManager.getDefaultSharedPreferences(activity)
+                        .getBoolean("malha_amlogic_hevc_experiment", false))
                 .put("model", Build.MODEL).put("manufacturer", Build.MANUFACTURER)
                 .put("device", Build.DEVICE).put("hardware", Build.HARDWARE).put("board", Build.BOARD)
                 .put("android_api", Build.VERSION.SDK_INT).put("android_release", Build.VERSION.RELEASE)

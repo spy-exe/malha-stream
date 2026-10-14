@@ -50,7 +50,7 @@ def main():
     plan.add_argument('--resolution',choices=['1080p','720p'],default='1080p')
     plan.add_argument('--fps',type=int,choices=[60],default=60)
     plan.add_argument('--bitrate-kbps',type=int,default=20000)
-    plan.add_argument('--profile',choices=['upstream','lowest-latency','balanced'],default='upstream')
+    plan.add_argument('--profile',choices=['upstream','lowest-latency','balanced','amlogic-hevc-no-low-latency'],default='upstream')
     plan.add_argument('--out',type=Path,required=True)
     for name in ('probe','prepare','collect'):
         command = sub.add_parser(name)
@@ -68,11 +68,13 @@ def main():
     args=parser.parse_args()
     if args.command=='plan':
         if not 500<=args.bitrate_kbps<=150000:raise ValueError('Bitrate out of supported range')
+        if args.profile=='amlogic-hevc-no-low-latency' and args.codec!='hevc':
+            raise ValueError('Amlogic experiment requires HEVC')
         result={'status':'BLOCKED','dependency':'Authorized device, stream sessions and external camera',
                 'test_type':'planned hardware and external-camera measurements',
                 'config':{'device_label':args.device,'codec':args.codec,'resolution':args.resolution,
                           'fps':args.fps,'bitrate_kbps':args.bitrate_kbps,'hdr':False},
-                'profile':args.profile,'schedule':schedule(['A-official','B-artemis','C-diagnostic','D-experiment','E-final'],3),
+                'profile':args.profile,'schedule':schedule(['A-official','B1-artemis','B2-vplus','C-diagnostic','D-experiment','E-final'],3),
                 'variant_note':'D and E remain pending; do not label a candidate approved before measurements',
                 'metrics':None}
         write(args.out,result)
@@ -86,7 +88,8 @@ def main():
         config=plan['config']
         if (config['resolution'] not in ('1080p','720p') or config['codec'] not in ('h264','hevc')
                 or config['fps']!=60 or not 500<=config['bitrate_kbps']<=150000 or config['hdr'] is not False
-                or plan['profile'] not in ('upstream','lowest-latency','balanced')):
+                or plan['profile'] not in ('upstream','lowest-latency','balanced','amlogic-hevc-no-low-latency')
+                or (plan['profile']=='amlogic-hevc-no-low-latency' and config['codec']!='hevc')):
             raise ValueError('Plan contains unsupported settings')
         output=shell(args.serial,'am','start','-n',PACKAGE+'/com.limelight.diagnostics.BenchmarkActivity',
                      '--es','command','configure','--es','resolution',

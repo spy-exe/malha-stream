@@ -271,6 +271,10 @@
             android:defaultValue="false"/>
     </PreferenceCategory>
     <PreferenceCategory android:key="malha_diagnostics_category" android:title="Malha Stream — Diagnóstico">
+        <CheckBoxPreference android:key="malha_amlogic_hevc_experiment"
+            android:title="Experimento HEVC MiTV-AYFR0"
+            android:summary="Desativa opções de baixa latência somente no decoder c2.amlogic.hevc.decoder e Android 14. Ainda sem validação física Malha."
+            android:defaultValue="false" />
         <CheckBoxPreference android:key="malha_diagnostics" android:title="Gravar diagnóstico da sessão"
             android:summary="Registra o pipeline para comparar sessões. Medição de input-to-photon exige instrumento externo."
             android:defaultValue="false" />
