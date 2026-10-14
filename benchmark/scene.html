@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Malha — cena determinística de benchmark</title>
+<style>
+html,body{margin:0;background:#000;color:#aaa;height:100%;font:16px monospace}
+#flash{position:fixed;inset:0;background:#000}
+#info{position:relative;padding:24px;max-width:620px}
+button{font:inherit;padding:12px;border:1px solid #777;background:#222;color:#eee}
+</style>
+<div id="flash"></div><div id="info">
+<h1>Malha — referência visual</h1>
+<p>Abra no mesmo host/cena e mantenha o refresh. Cada tecla Espaço ou botão de gamepad causa um flash de 200 ms. Aguarde pelo menos 500 ms entre acionamentos.</p>
+<p>O contador e esta página não medem input-to-photon. Filme uma referência física do input e o painel.</p>
+<button id="start">Iniciar em tela cheia</button><p id="count">Eventos: 0</p>
+</div>
+<script>
+const flash = document.querySelector('#flash');
+let count=0,deadline=0,lastInput=0;
+const states=new Map();
+function fire(){
+  const now=performance.now();
+  if(now-lastInput<500)return;
+  lastInput=now;deadline=now+200;count++;
+  flash.style.background='#fff';
+  document.querySelector('#count').textContent='Eventos: '+count;
+}
+document.querySelector('#start').onclick=()=>document.documentElement.requestFullscreen();
+addEventListener('keydown',event=>{if(event.code==='Space'&&!event.repeat){event.preventDefault();fire();}});
+function tick(now){
+  if(deadline && now>=deadline){flash.style.background='#000';deadline=0;}
+  for(const pad of navigator.getGamepads?.()||[]){
+    if(!pad)continue;
+    pad.buttons.forEach((button,index)=>{
+      const key=pad.index+':'+index;
+      if(button.pressed&&!states.get(key))fire();
+      states.set(key,button.pressed);
+    });
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+</script></html>
