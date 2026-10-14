@@ -46,6 +46,7 @@ public final class DiagnosticSession {
     private final ExecutorService exporter = Executors.newSingleThreadExecutor();
     private volatile boolean closed;
     private int generation;
+    private final boolean traceEnabled;
 
     public static DiagnosticSession begin(Activity activity, PreferenceConfiguration prefs) {
         if (!BuildConfig.MALHA_DIAGNOSTICS || !PreferenceManager.getDefaultSharedPreferences(activity)
@@ -60,6 +61,7 @@ public final class DiagnosticSession {
     private DiagnosticSession(Activity activity, PreferenceConfiguration prefs) throws Exception {
         this.activity = activity;
         context = activity.getApplicationContext();
+        traceEnabled = PreferenceManager.getDefaultSharedPreferences(activity).getBoolean("malha_trace", false);
         Arrays.fill(outputPts, -1);
         metadata.put("schema_version", 1).put("session_id", sessionId)
                 .put("commit", BuildConfig.MALHA_COMMIT).put("apk_version", BuildConfig.VERSION_NAME)
@@ -83,6 +85,7 @@ public final class DiagnosticSession {
                 .put("native_receive_note", "Native client assembly duration only; not one-way network latency")
                 .put("host_processing_note", "Host-reported duration in tenths of ms; zero means unavailable")
                 .put("instrumentation_note", "Opt-in observer; bounded ring and periodic resource samples may add overhead. Compare with recording disabled.");
+        metadata.put("android_trace_enabled", traceEnabled);
         if (Build.VERSION.SDK_INT >= 31) {
             metadata.put("soc_model", Build.SOC_MODEL).put("soc_manufacturer", Build.SOC_MANUFACTURER);
         }
@@ -93,14 +96,16 @@ public final class DiagnosticSession {
         handler.post(new Runnable() {
             @Override public void run() {
                 if (closed) return;
-                record("process_cpu_ms", 0, Process.getElapsedCpuTime());
-                Debug.MemoryInfo memory = new Debug.MemoryInfo();
-                Debug.getMemoryInfo(memory);
-                record("process_pss_kb", 0, memory.getTotalPss());
-                if (Build.VERSION.SDK_INT >= 29) {
-                    PowerManager power = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                    if (power != null) record("thermal_status", 0, power.getCurrentThermalStatus());
-                }
+                try {
+                    record("process_cpu_ms", 0, Process.getElapsedCpuTime());
+                    Debug.MemoryInfo memory = new Debug.MemoryInfo();
+                    Debug.getMemoryInfo(memory);
+                    record("process_pss_kb", 0, memory.getTotalPss());
+                    if (Build.VERSION.SDK_INT >= 29) {
+                        PowerManager power = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                        if (power != null) record("thermal_status", 0, power.getCurrentThermalStatus());
+                    }
+                } catch (RuntimeException unavailable) { record("resource_sample_unavailable", 0, 0); }
                 handler.postDelayed(this, 1000);
             }
         });
@@ -127,7 +132,13 @@ public final class DiagnosticSession {
     }
 
     public void record(String name, long id, long value) {
-        if (!closed) events.record(name, id, System.nanoTime(), value);
+        if (!closed) {
+            events.record(name, id, System.nanoTime(), value);
+            if (traceEnabled) {
+                if (Build.VERSION.SDK_INT >= 29) android.os.Trace.setCounter(name, id);
+                else { android.os.Trace.beginSection(name); android.os.Trace.endSection(); }
+            }
+        }
     }
     public void recordAt(String name, long id, long ns, long value) {
         if (!closed && ns >= 0) events.record(name, id, ns, value);

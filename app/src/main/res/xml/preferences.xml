@@ -278,6 +278,9 @@
         <CheckBoxPreference android:key="malha_diagnostics" android:title="Gravar diagnóstico da sessão"
             android:summary="Registra o pipeline para comparar sessões. Medição de input-to-photon exige instrumento externo."
             android:defaultValue="false" />
+        <CheckBoxPreference android:key="malha_trace" android:title="Marcadores de trace Android"
+            android:summary="Opcional para investigar o pipeline com Perfetto. Mantenha desativado nas comparações de latência."
+            android:defaultValue="false" />
         <com.limelight.diagnostics.ExportPreference android:title="Exportar última sessão"
             android:summary="Compartilhar JSON e CSV do diagnóstico" />
     </PreferenceCategory>
