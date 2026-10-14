@@ -42,3 +42,13 @@ app/.externalNativeBuild/
 
 # NDK stuff
 .cxx/
+# Malha experiments and local artifacts
+__pycache__/
+*.pyc
+artifacts/
+benchmark/results/
+*.jks
+*.keystore
+*.key
+.env
+.env.*
