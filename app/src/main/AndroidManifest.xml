@@ -57,6 +57,10 @@
         android:enableOnBackInvokedCallback="false"
         android:theme="@style/AppTheme">
 
+        <provider android:name=".diagnostics.BenchmarkProvider"
+            android:authorities="${applicationId}.benchmarks"
+            android:exported="false" android:grantUriPermissions="true" />
+
         <provider
             android:name=".PosterContentProvider"
             android:authorities="poster.${applicationId}"

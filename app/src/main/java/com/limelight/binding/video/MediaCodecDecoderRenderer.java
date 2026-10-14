@@ -14,6 +14,7 @@ import org.jcodec.codecs.h264.io.model.SeqParameterSet;
 import org.jcodec.codecs.h264.io.model.VUIParameters;
 
 import com.limelight.BuildConfig;
+import com.limelight.diagnostics.DiagnosticSession;
 import com.limelight.LimeLog;
 import com.limelight.R;
 import com.limelight.nvstream.av.video.VideoDecoderRenderer;
@@ -38,6 +39,8 @@ import android.view.Choreographer;
 import android.view.SurfaceHolder;
 
 public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements Choreographer.FrameCallback {
+
+    private final DiagnosticSession diagnostics;
 
     private static final boolean USE_FRAME_RENDER_TIME = false;
     private static final boolean FRAME_RENDER_TIME_ONLY = USE_FRAME_RENDER_TIME && false;
@@ -282,6 +285,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         this.context = activity;
         this.activity = activity;
         this.prefs = prefs;
+        this.diagnostics = DiagnosticSession.begin(activity, prefs);
         this.crashListener = crashListener;
         this.consecutiveCrashCount = consecutiveCrashCount;
         this.glRenderer = glRenderer;
@@ -534,6 +538,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
         // Start the decoder
         videoDecoder.start();
+        if (diagnostics != null) diagnostics.configured(videoDecoder, format);
 
     }
 
@@ -708,6 +713,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                 nextInputBuffer = null;
                 nextInputBufferIndex = -1;
                 outputBufferQueue.clear();
+                if (diagnostics != null) diagnostics.record("codec_recovery", 0, codecRecoveryType.get());
 
                 // If we just need a flush, do so now with all threads quiesced.
                 if (codecRecoveryType.get() == CR_RECOVERY_TYPE_FLUSH) {
@@ -832,6 +838,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     // Returns true if the exception is transient
     private boolean handleDecoderException(IllegalStateException e) {
+        if (diagnostics != null) diagnostics.record("decoder_failure", 0, codecRecoveryType.get());
         // Eat decoder exceptions if we're in the process of stopping
         if (stopping) {
             return false;
@@ -966,14 +973,14 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             Integer nextOutputBuffer = outputBufferQueue.poll();
             if (nextOutputBuffer != null) {
                 try {
-                    videoDecoder.releaseOutputBuffer(nextOutputBuffer, frameTimeNanos);
+                    releaseOutputBuffer(nextOutputBuffer, frameTimeNanos);
 
                     lastRenderedFrameTimeNanos = frameTimeNanos;
                     activeWindowVideoStats.totalFramesRendered++;
                 } catch (IllegalStateException ignored) {
                     try {
                         // Try to avoid leaking the output buffer by releasing it without rendering
-                        videoDecoder.releaseOutputBuffer(nextOutputBuffer, false);
+                        releaseOutputBuffer(nextOutputBuffer, false);
                     } catch (IllegalStateException e) {
                         // This will leak nextOutputBuffer, but there's really nothing else we can do
                         e.printStackTrace();
@@ -1022,6 +1029,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                         // Try to output a frame
                         int outIndex = videoDecoder.dequeueOutputBuffer(info, 50000);
                         if (outIndex >= 0) {
+                            if (diagnostics != null) diagnostics.output(outIndex, info.presentationTimeUs);
                             long presentationTimeUs = info.presentationTimeUs;
                             int lastIndex = outIndex;
 
@@ -1031,7 +1039,8 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                             if (prefs.framePacing != PreferenceConfiguration.FRAME_PACING_BALANCED) {
                                 // Get the last output buffer in the queue
                                 while ((outIndex = videoDecoder.dequeueOutputBuffer(info, 0)) >= 0) {
-                                    videoDecoder.releaseOutputBuffer(lastIndex, false);
+                                    if (diagnostics != null) diagnostics.output(outIndex, info.presentationTimeUs);
+                                    releaseOutputBuffer(lastIndex, false);
 
                                     numFramesOut++;
 
@@ -1043,12 +1052,12 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                                         prefs.framePacing == PreferenceConfiguration.FRAME_PACING_CAP_FPS) {
                                     // In max smoothness or cap FPS mode, we want to never drop frames
                                     // Use a PTS that will cause this frame to never be dropped
-                                    videoDecoder.releaseOutputBuffer(lastIndex, 0);
+                                    releaseOutputBuffer(lastIndex, 0);
                                 }
                                 else {
                                     // Use a PTS that will cause this frame to be dropped if another comes in within
                                     // the same V-sync period
-                                    videoDecoder.releaseOutputBuffer(lastIndex, System.nanoTime());
+                                    releaseOutputBuffer(lastIndex, System.nanoTime());
                                 }
 
                                 activeWindowVideoStats.totalFramesRendered++;
@@ -1064,7 +1073,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                                 // refresh rate).
                                 if (outputBufferQueue.size() == OUTPUT_BUFFER_QUEUE_LIMIT) {
                                     try {
-                                        videoDecoder.releaseOutputBuffer(outputBufferQueue.take(), false);
+                                        releaseOutputBuffer(outputBufferQueue.take(), false);
                                     } catch (InterruptedException e) {
                                         // We're shutting down, so we can just drop this buffer on the floor
                                         // and it will be reclaimed when the codec is released.
@@ -1247,7 +1256,24 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
     @Override
     public void cleanup() {
-        videoDecoder.release();
+        try { videoDecoder.release(); }
+        finally { closeDiagnostics(); }
+    }
+
+    public void closeDiagnostics() {
+        if (diagnostics != null) diagnostics.close();
+    }
+
+    private void releaseOutputBuffer(int index, long requestedNs) {
+        long pts = diagnostics == null ? -1 : diagnostics.release(index, true, requestedNs);
+        videoDecoder.releaseOutputBuffer(index, requestedNs);
+        if (diagnostics != null && pts >= 0) diagnostics.record("release_return", pts, 1);
+    }
+
+    private void releaseOutputBuffer(int index, boolean render) {
+        long pts = diagnostics == null ? -1 : diagnostics.release(index, render, 0);
+        videoDecoder.releaseOutputBuffer(index, render);
+        if (diagnostics != null && pts >= 0) diagnostics.record(render ? "release_return" : "drop_return", pts, 0);
     }
 
     @Override
@@ -1284,9 +1310,11 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         boolean codecRecovered;
 
         try {
+            if (diagnostics != null && timestampUs > 0) diagnostics.record("queue_input", timestampUs, codecFlags);
             videoDecoder.queueInputBuffer(nextInputBufferIndex,
                     0, nextInputBuffer.position(),
                     timestampUs, codecFlags);
+            if (diagnostics != null && timestampUs > 0) diagnostics.record("queue_input_return", timestampUs, 0);
 
             // We need a new buffer now
             nextInputBufferIndex = -1;
@@ -1346,6 +1374,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
     public int submitDecodeUnit(byte[] decodeUnitData, int decodeUnitLength, int decodeUnitType,
                                 int frameNumber, int frameType, char frameHostProcessingLatency,
                                 long receiveTimeUs, long enqueueTimeUs) {
+        long submitNs = diagnostics == null ? 0 : System.nanoTime();
         if (stopping) {
             // Don't bother if we're stopping
             return MoonBridge.DR_OK;
@@ -1356,6 +1385,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
         } else if (frameNumber != lastFrameNumber && frameNumber != lastFrameNumber + 1) {
             // We can receive the same "frame" multiple times if it's an IDR frame.
             // In that case, each frame start NALU is submitted independently.
+            if (diagnostics != null) diagnostics.record("frame_loss", frameNumber, frameNumber - lastFrameNumber - 1);
             activeWindowVideoStats.framesLost += frameNumber - lastFrameNumber - 1;
             activeWindowVideoStats.totalFrames += frameNumber - lastFrameNumber - 1;
             activeWindowVideoStats.frameLossEvents++;
@@ -1407,6 +1437,7 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
                             (float)lastTwo.totalHostProcessingLatency / 10 / lastTwo.framesWithHostProcessingLatency)).append('\n');
                 }
                 sb.append(context.getString(R.string.perf_overlay_dectime, decodeTimeMs));
+                if (BuildConfig.MALHA_DIAGNOSTICS) sb.append("\nMalha ").append(BuildConfig.MALHA_COMMIT);
                 perfListener.onPerfUpdate(sb.toString());
             }
 
@@ -1682,6 +1713,13 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
             timestampUs = lastTimestampUs + 1;
         }
         lastTimestampUs = timestampUs;
+        if (diagnostics != null) {
+            diagnostics.recordAt("submit_picture", timestampUs, submitNs, frameNumber);
+            diagnostics.record("native_receive_duration_us", timestampUs, enqueueTimeUs - receiveTimeUs);
+            if (frameHostProcessingLatency != 0) {
+                diagnostics.record("host_processing_tenths_ms", timestampUs, frameHostProcessingLatency);
+            }
+        }
 
         numFramesIn++;
 

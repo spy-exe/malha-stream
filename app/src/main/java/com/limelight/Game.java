@@ -1035,6 +1035,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (decoderRenderer != null) decoderRenderer.closeDiagnostics();
 
         if (controllerHandler != null) {
             controllerHandler.destroy();
@@ -1326,6 +1327,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public boolean handleKeyDown(KeyEvent event) {
+        com.limelight.diagnostics.DiagnosticSession.input("input_key_down", event.getKeyCode(), event.getEventTime());
         // Pass-through virtual navigation keys
         if ((event.getFlags() & KeyEvent.FLAG_VIRTUAL_HARD_KEY) != 0) {
             return false;
@@ -1408,6 +1410,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public boolean handleKeyUp(KeyEvent event) {
+        com.limelight.diagnostics.DiagnosticSession.input("input_key_up", event.getKeyCode(), event.getEventTime());
         // Pass-through virtual navigation keys
         if ((event.getFlags() & KeyEvent.FLAG_VIRTUAL_HARD_KEY) != 0) {
             return false;
@@ -2134,6 +2137,7 @@ public class Game extends Activity implements SurfaceHolder.Callback,
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
+        com.limelight.diagnostics.DiagnosticSession.input("input_motion", event.getSource(), event.getEventTime());
         return handleMotionEvent(null, event) || super.onGenericMotionEvent(event);
 
     }

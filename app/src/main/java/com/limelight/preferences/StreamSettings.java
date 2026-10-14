@@ -276,6 +276,11 @@ public class StreamSettings extends Activity {
 
             addPreferencesFromResource(R.xml.preferences);
             PreferenceScreen screen = getPreferenceScreen();
+            findPreference("malha_build_info").setSummary(com.limelight.BuildConfig.VERSION_NAME
+                    + " · " + com.limelight.BuildConfig.MALHA_COMMIT);
+            if (!com.limelight.BuildConfig.MALHA_DIAGNOSTICS) {
+                screen.removePreference(findPreference("malha_diagnostics_category"));
+            }
 
             // hide on-screen controls category on non touch screen devices
             if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)) {

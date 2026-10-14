@@ -4,6 +4,7 @@
 
     <PreferenceCategory android:title="@string/category_basic_settings"
         android:key="category_basic_settings">
+        <Preference android:key="malha_build_info" android:title="Malha Stream — Build" />
         <ListPreference
             android:key="list_resolution"
             android:title="@string/title_resolution_list"
@@ -268,6 +269,13 @@
             android:title="@string/title_enable_post_stream_toast"
             android:summary="@string/summary_enable_post_stream_toast"
             android:defaultValue="false"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:key="malha_diagnostics_category" android:title="Malha Stream — Diagnóstico">
+        <CheckBoxPreference android:key="malha_diagnostics" android:title="Gravar diagnóstico da sessão"
+            android:summary="Registra o pipeline para comparar sessões. Medição de input-to-photon exige instrumento externo."
+            android:defaultValue="false" />
+        <com.limelight.diagnostics.ExportPreference android:title="Exportar última sessão"
+            android:summary="Compartilhar JSON e CSV do diagnóstico" />
     </PreferenceCategory>
     <!--PreferenceCategory android:title="@string/category_help"
         android:key="category_help">
