@@ -41,7 +41,7 @@ jobs:
         run: |
           set -o pipefail
           git rev-parse HEAD > evidence/source-commit.txt
-          ./gradlew --no-daemon --max-workers=2 :app:assembleNonRootDebug :app:assembleNonRootRelease :app:lintNonRootDebug 2>&1 | tee evidence/build.log
+          ./gradlew --no-daemon --max-workers=2 :app:assembleNonRootDebug :app:assembleNonRootRelease :app:assembleNonRootDebugAndroidTest :app:lintNonRootDebug 2>&1 | tee evidence/build.log
           sha256sum app/build/outputs/apk/nonRoot/*/*.apk > evidence/SHA256SUMS
       - uses: actions/upload-artifact@v4
         if: always()
@@ -52,5 +52,6 @@ jobs:
             telemetry/build/reports/
             telemetry/build/test-results/
             app/build/outputs/apk/nonRoot/
+            app/build/outputs/apk/androidTest/
             app/build/reports/lint-results*
           retention-days: 30
