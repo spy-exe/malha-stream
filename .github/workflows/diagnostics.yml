@@ -1,0 +1,50 @@
+name: Malha validation
+on:
+  push:
+    branches: [main, 'feature/**', 'experiment/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: malha-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - run: sdkmanager 'platforms;android-37.0' 'build-tools;36.0.0' 'ndk;29.0.14206865'
+      - name: Tests and coverage
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p evidence
+          ./gradlew --no-daemon --max-workers=2 :telemetry:check 2>&1 | tee evidence/tests.log
+      - name: APK and lint
+        shell: bash
+        run: |
+          set -o pipefail
+          git rev-parse HEAD > evidence/source-commit.txt
+          ./gradlew --no-daemon --max-workers=2 :app:assembleNonRootDebug :app:assembleNonRootRelease :app:lintNonRootDebug 2>&1 | tee evidence/build.log
+          sha256sum app/build/outputs/apk/nonRoot/*/*.apk > evidence/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: malha-${{ github.sha }}
+          path: |
+            evidence/
+            telemetry/build/reports/
+            telemetry/build/test-results/
+            app/build/outputs/apk/nonRoot/
+            app/build/reports/lint-results*
+          retention-days: 30
