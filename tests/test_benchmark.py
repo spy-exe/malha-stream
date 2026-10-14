@@ -53,3 +53,13 @@ class AnalysisTest(unittest.TestCase):
         self.assertTrue(all(row['status'] == 'PENDING' for row in planned))
         with self.assertRaises(ValueError): schedule(['A'], 3)
         with self.assertRaises(ValueError): schedule(['A','B'], 0)
+
+    def test_relative_display_difference_may_be_negative(self):
+        rows=[{'input_frame':'20','photon_frame':'19','camera_fps':'240'}]
+        self.assertAlmostEqual(camera_latencies(rows, measurement='display-relative')[0], -1000/240)
+        baseline={'config':{},'measurement':'display-relative','samples_ms':[-5]*100}
+        candidate={'config':{},'measurement':'display-relative','samples_ms':[-10]*100}
+        result=compare(baseline,candidate)
+        self.assertEqual(result['candidate']['p50_ms'],-10)
+        self.assertIsNone(result['gain_percent'])
+        self.assertFalse(result['improvement_verified'])

@@ -12,8 +12,8 @@ def percentile(values, quantile):
     return ordered[lower] + (ordered[upper] - ordered[lower]) * (index - lower)
 
 
-def summarize(values):
-    if any(not math.isfinite(value) or value < 0 for value in values):
+def summarize(values, allow_negative=False):
+    if any(not math.isfinite(value) or (value < 0 and not allow_negative) for value in values):
         raise ValueError('Finite nonnegative measurements required')
     interval = None
     if values:
@@ -29,11 +29,12 @@ def summarize(values):
             'tail_policy': 'p95 requires n>=100; p99 requires n>=1000'}
 
 
-def camera_latencies(rows):
+def camera_latencies(rows, measurement='input-to-photon'):
     values = []
     for row in rows:
         first, photon, fps = (float(row[key]) for key in ('input_frame', 'photon_frame', 'camera_fps'))
-        if not all(math.isfinite(value) for value in (first, photon, fps)) or fps <= 0 or first < 0 or photon < first:
+        if (not all(math.isfinite(value) for value in (first, photon, fps)) or fps <= 0 or first < 0 or photon < 0
+                or (photon < first and measurement != 'display-relative')):
             raise ValueError('Invalid external camera measurement')
         if first != int(first) or photon != int(photon):
             raise ValueError('Frame indices must be integers')
@@ -46,14 +47,15 @@ def compare(baseline, candidate):
         raise ValueError('Comparable stream, device, host, scene and environment configuration required')
     if baseline['measurement'] != candidate['measurement']:
         raise ValueError('Measurement types differ; cannot compare')
-    before, after = summarize(baseline['samples_ms']), summarize(candidate['samples_ms'])
+    relative = baseline['measurement']=='display-relative'
+    before, after = summarize(baseline['samples_ms'], relative), summarize(candidate['samples_ms'], relative)
     gain = None
-    if before['p50_ms'] is not None and before['p50_ms'] > 0 and after['p50_ms'] is not None:
+    if not relative and before['p50_ms'] is not None and before['p50_ms'] > 0 and after['p50_ms'] is not None:
         gain = (before['p50_ms'] - after['p50_ms']) / before['p50_ms'] * 100
     tail_change = None
     if before['p95_ms'] is not None and after['p95_ms'] is not None:
         tail_change = after['p95_ms'] - before['p95_ms']
-    return {'status': 'BLOCKED' if gain is None else 'BENCHMARKED',
+    return {'status': 'BLOCKED' if before['n']==0 or after['n']==0 else 'BENCHMARKED',
             'measurement': baseline['measurement'], 'baseline': before, 'candidate': after,
             'gain_percent': gain, 'p95_change_ms': tail_change,
             'regression': gain is not None and (gain < 0 or (tail_change is not None and tail_change > 0)),
