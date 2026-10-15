@@ -18,6 +18,8 @@ Debug e release podem coexistir com o Moonlight oficial. A assinatura debug do l
 
 CT **105**, hostname `malha-stream-build`, Debian 13, **10.10.1.88 por DHCP**, bridge `vmbr0`, disco `local-lvm` de 32 GiB, 2 vCPU, 4 GiB RAM e 1 GiB swap. É unprivileged, sem nesting; inicia com o PVE. O usuário `malha` não tem sudo.
 
+SSH usa somente IPv4 com chave; a configuração do socket systemd acompanha essa restrição. Nenhum encaminhamento de porta, domínio ou proxy público foi criado. IPv6 herdado da rede não oferece um listener SSH no CT.
+
 No terminal do PVE, a chave SSH já autorizada permite:
 
 ```bash

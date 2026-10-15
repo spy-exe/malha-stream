@@ -19,9 +19,20 @@ cat > /etc/ssh/sshd_config.d/50-malha.conf <<'EOF'
 PasswordAuthentication no
 KbdInteractiveAuthentication no
 PermitRootLogin no
+AddressFamily inet
+EOF
+# Debian socket activation otherwise binds IPv6 even when sshd uses IPv4.
+install -d /etc/systemd/system/ssh.socket.d
+cat > /etc/systemd/system/ssh.socket.d/20-malha-lan.conf <<'EOF'
+[Socket]
+ListenStream=
+ListenStream=0.0.0.0:22
 EOF
 sshd -t
-systemctl restart ssh
+systemctl daemon-reload
+systemctl stop ssh.service
+systemctl restart ssh.socket
+systemctl start ssh.service
 # LXC already supplies /run and /dev. These optional systemd 257 mounts failed
 # in this unprivileged CT; /tmp and /run/lock work as directories without nesting.
 install -d -m 1777 /tmp /run/lock
