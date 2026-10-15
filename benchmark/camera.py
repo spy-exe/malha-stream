@@ -14,7 +14,6 @@ def roi(value):
     return values
 
 def main():
-    import cv2
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--video',type=Path,required=True)
     parser.add_argument('--led-roi',type=roi,required=True)
@@ -26,6 +25,7 @@ def main():
     parser.add_argument('--session-id',required=True)
     parser.add_argument('--out',type=Path,required=True)
     args=parser.parse_args()
+    import cv2
     if (not all(math.isfinite(value) for value in (args.capture_fps,args.max_ms,args.threshold))
             or args.capture_fps<=0 or args.max_ms<=0 or not 0<=args.threshold<=255):
         raise SystemExit('Finite positive capture FPS/timeout and threshold 0..255 required')
