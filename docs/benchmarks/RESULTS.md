@@ -8,6 +8,9 @@
 | Upstream original no CT Debian/JDK21 | PASS | Log local `ct-baseline-build.log`, 59 tasks, 6m43s; duração de build não é benchmark de streaming |
 | Fork debug/release, lint, APK de integração | PASS | [run 38658648113](https://github.com/spy-exe/malha-stream/actions/runs/38658648113), commit `2867d5b7` |
 | Fork no CT, mesmas tasks e cobertura | PASS | Log local `ct-malha-build.log`, source `2867d5b7` |
+| Release 0.1.0-dev no CT, build e lint finais | PASS | [build.log na release](https://github.com/spy-exe/malha-stream/releases/tag/v0.1.0-dev), source `695fa8f7`, 147 tasks, 4m16s; não mede streaming |
+| Commit da release em CI | PASS | [run 38660704880](https://github.com/spy-exe/malha-stream/actions/runs/38660704880), source `695fa8f7` |
+| Assinatura release e integridade dos três APKs | PASS | Assinatura v1/v2/v3, zipalign 16 KiB, SHA-256 local igual ao digest de cada asset publicado; `SOURCE_COMMIT` e identidade embarcada conferidos |
 | JVM | 12 testes PASS, cobertura 61/61 linhas (100%) | JaCoCo XML/HTML nos artefatos CI e CT |
 | Python puro | 14 testes PASS, 108/111 statements (97,3%) | Coverage XML, source analysis/events/pipeline; CLI/ADB/OpenCV são bindings |
 | Integração Android | NOT_RUN | APK de teste compilado; nenhum dispositivo autorizado conectado |
