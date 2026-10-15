@@ -9,7 +9,7 @@ button{font:inherit;padding:12px;border:1px solid #777;background:#222;color:#ee
 </style>
 <div id="flash"></div><div id="info">
 <h1>Malha — referência visual</h1>
-<p>Abra no mesmo host/cena e mantenha o refresh. Cada tecla Espaço ou botão de gamepad causa um flash de 200 ms. Aguarde pelo menos 500 ms entre acionamentos.</p>
+<p>Abra no mesmo host/cena e mantenha o refresh. Cada tecla Espaço ou botão de gamepad causa um flash de 200 ms. Aguarde a resposta e pelo menos 2 s entre acionamentos.</p>
 <p>O contador e esta página não medem input-to-photon. Filme uma referência física do input e o painel.</p>
 <button id="start">Iniciar em tela cheia</button><p id="count">Eventos: 0</p>
 </div>
@@ -19,7 +19,7 @@ let count=0,deadline=0,lastInput=0;
 const states=new Map();
 function fire(){
   const now=performance.now();
-  if(now-lastInput<500)return;
+  if(now-lastInput<2000)return;
   lastInput=now;deadline=now+200;count++;
   flash.style.background='#fff';
   document.querySelector('#count').textContent='Eventos: '+count;

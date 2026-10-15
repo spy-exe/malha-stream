@@ -8,6 +8,7 @@ import shlex
 import subprocess
 import sys
 from .analysis import camera_latencies, compare, summarize, schedule
+from .pipeline import pipeline_report
 
 PACKAGE = 'app.malhastream.debug'
 
@@ -111,6 +112,13 @@ def main():
             data=adb(args.serial,'exec-out','run-as',PACKAGE,'cat','files/benchmarks/'+name)
             (args.out/name).write_bytes(data)
             collected.append({'name':name,'sha256':hashlib.sha256(data).hexdigest()})
+        for path in args.out.glob('*.json'):
+            if not re.fullmatch(r'[a-f0-9-]{36}\.json',path.name):continue
+            metadata=json.loads(path.read_text())
+            csv_path=path.with_suffix('.csv')
+            if not csv_path.exists():raise ValueError('Incomplete JSON/CSV export pair')
+            with csv_path.open(newline='') as source:rows=list(csv.DictReader(source))
+            write(path.with_suffix('.pipeline.json'),pipeline_report(rows,metadata))
         write(args.out/'collection.json',{'test_type':'real-device telemetry export','device':device,
                                          'files':collected,'input_to_photon_ms':None,
                                          'status':'DEVICE VERIFIED' if collected else 'BLOCKED',
@@ -151,6 +159,6 @@ def main():
 
 if __name__=='__main__':
     try:sys.exit(main())
-    except (ValueError,OSError,subprocess.CalledProcessError) as error:
+    except (ValueError,KeyError,OSError,subprocess.CalledProcessError) as error:
         print(json.dumps({'status':'BLOCKED','reason':str(error)}),file=sys.stderr)
         sys.exit(3)
