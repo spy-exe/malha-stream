@@ -492,6 +492,8 @@ public class NvConnection {
             final short rightStickX, final short rightStickY)
     {
         if (!isMonkey) {
+            if (com.limelight.BuildConfig.MALHA_DIAGNOSTICS)
+                com.limelight.diagnostics.DiagnosticSession.controllerForwarded(controllerNumber, buttonFlags);
             MoonBridge.sendMultiControllerInput(controllerNumber, activeGamepadMask, buttonFlags,
                     leftTrigger, rightTrigger, leftStickX, leftStickY, rightStickX, rightStickY);
         }

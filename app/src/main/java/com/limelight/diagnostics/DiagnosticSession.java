@@ -184,6 +184,10 @@ public final class DiagnosticSession {
             active.record(type, code, android.os.SystemClock.uptimeMillis() - eventTimeMs);
         }
     }
+    public static void controllerForwarded(short controller, int buttons) {
+        DiagnosticSession active = current;
+        if (active != null) active.record("controller_forward", controller, buttons & 0xffffffffL);
+    }
     public static boolean exportActive(Runnable completion) {
         DiagnosticSession active = current;
         if (active == null) return false;
