@@ -55,10 +55,13 @@ def compare(baseline, candidate):
     tail_change = None
     if before['p95_ms'] is not None and after['p95_ms'] is not None:
         tail_change = after['p95_ms'] - before['p95_ms']
+    median_change = (after['p50_ms']-before['p50_ms']
+                     if before['p50_ms'] is not None and after['p50_ms'] is not None else None)
     return {'status': 'BLOCKED' if before['n']==0 or after['n']==0 else 'BENCHMARKED',
             'measurement': baseline['measurement'], 'baseline': before, 'candidate': after,
             'gain_percent': gain, 'p95_change_ms': tail_change,
-            'regression': gain is not None and (gain < 0 or (tail_change is not None and tail_change > 0)),
+            'median_change_ms':median_change,
+            'regression': (median_change is not None and median_change>0) or (tail_change is not None and tail_change>0),
             'improvement_verified': False,
             'acceptance_review_required': ['external input reference and raw recordings',
                                            'three sessions and >=120 seconds telemetry per session',
