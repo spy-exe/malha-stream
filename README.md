@@ -1,35 +1,49 @@
-# Moonlight Android
+# Malha Stream
 
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/232a8tadrrn8jv0k/branch/master?svg=true)](https://ci.appveyor.com/project/cgutman/moonlight-android/branch/master)
-[![Translation Status](https://hosted.weblate.org/widgets/moonlight/-/moonlight-android/svg-badge.svg)](https://hosted.weblate.org/projects/moonlight/moonlight-android/)
+Laboratório de streaming Android TV/Fire OS baseado em Moonlight Android 12.2 e compatível com Sunshine existente.
 
-[Moonlight for Android](https://moonlight-stream.org) is an open source client for NVIDIA GameStream and [Sunshine](https://github.com/LizardByte/Sunshine).
+**Estado:** build e testes automatizados disponíveis. Validação em dispositivo e ganho de input-to-photon ainda bloqueados por acesso a TV/ADB e medição externa. Nenhum ganho físico é anunciado.
 
-Moonlight for Android will allow you to stream your full collection of games from your Windows PC to your Android device,
-whether in your own home or over the internet.
+- [Pesquisa e escolha de base](RESEARCH.md)
+- [Arquitetura](ARCHITECTURE.md)
+- [Testes e cobertura](TESTING.md)
+- [Metodologia de desempenho](PERFORMANCE.md)
+- [Compatibilidade provisória](docs/research/COMPATIBILITY.md)
+- [Histórico](CHANGELOG.md)
+- [Resultados e pendências](docs/benchmarks/RESULTS.md)
 
-Moonlight also has a [PC client](https://github.com/moonlight-stream/moonlight-qt) and [iOS/tvOS client](https://github.com/moonlight-stream/moonlight-ios).
+## Instalação
 
-You can follow development on our [Discord server](https://moonlight-stream.org/discord) and help translate Moonlight into your language on [Weblate](https://hosted.weblate.org/projects/moonlight/moonlight-android/).
+Baixe os APKs e confira SHA-256 nos [Releases](https://github.com/spy-exe/malha-stream/releases). O diagnóstico usa `app.malhastream.debug`; a release usa `app.malhastream.unofficial`. Ambos podem coexistir com Moonlight oficial. A release normal mantém políticas upstream, com diagnóstico e experimento desativados.
 
-## Downloads
-* [Google Play Store](https://play.google.com/store/apps/details?id=com.limelight)
-* [Amazon App Store](https://www.amazon.com/gp/product/B00JK4MFN2)
-* [F-Droid](https://f-droid.org/packages/com.limelight)
-* [APK](https://github.com/moonlight-stream/moonlight-android/releases)
+No diagnóstico, ative **Gravar diagnóstico da sessão** nas configurações e encerre normalmente o stream para exportar. **Exportar última sessão** compartilha JSON/CSV quando existe app de compartilhamento; coleta ADB funciona sem esse app. Overlay e tela de configurações identificam o commit. Os marcadores Android Trace são outra opção, desligada por padrão.
 
-## Building
-* Install Android Studio and the Android NDK
-* Run ‘git submodule update --init --recursive’ from within moonlight-android/
-* In moonlight-android/, create a file called ‘local.properties’. Add an ‘ndk.dir=’ property to the local.properties file and set it equal to your NDK directory.
-* Build the APK using Android Studio or gradle
+O único experimento novo é HEVC no caso MiTV-AYFR0/API34/decoder C2 exato. É manual, desligado por padrão e não representa otimização aprovada. Hardware desconhecido usa upstream.
 
-## Authors
+## Build reproduzível
 
-* [Cameron Gutman](https://github.com/cgutman)  
-* [Diego Waxemberg](https://github.com/dwaxemberg)  
-* [Aaron Neyer](https://github.com/Aaronneyer)  
-* [Andrew Hennessy](https://github.com/yetanothername)
+```bash
+git clone --recurse-submodules https://github.com/spy-exe/malha-stream.git
+cd malha-stream
+./gradlew --no-daemon --max-workers=2 :telemetry:check :app:assembleNonRootDebug :app:lintNonRootDebug
+python3 -m unittest discover -s tests -v
+```
 
-Moonlight is the work of students at [Case Western](http://case.edu) and was
-started as a project at [MHacks](http://mhacks.org).
+Requer JDK 17+ compatível, Android SDK `platforms;android-37.0`, Build Tools 36.0.0 e NDK 29.0.14206865. O wrapper fixa Gradle 9.7.1 e AGP 9.4.0. Scripts de instalação nativa existem em `scripts/`, com guard para executar somente no CT do projeto. O laboratório usa JDK 21 no Debian; CI usa JDK 17. Logs registram a diferença, sem prometer APK byte a byte idêntico entre ambientes.
+
+CI executa checkout com submodules, build debug/release, lint, testes JVM, cobertura, testes Python, montagem do APK de integração e checksums. Publica artefatos de desenvolvimento. Testes Android reais permanecem NOT_RUN até haver dispositivo autorizado; APK de teste compilado não significa teste executado.
+
+## Atualização do upstream
+
+```bash
+git remote add upstream https://github.com/moonlight-stream/moonlight-android.git # se ausente
+git fetch upstream --tags
+git switch -c maintenance/upstream-sync
+# Revise diff e submodule; integre a revisão escolhida e execute TESTING.md.
+```
+
+Mantenha `main` com defaults seguros. Use branches curtas para hipóteses, preserve o baseline por commit e não atualize protocolo, decoder e apresentação no mesmo experimento. Mudança no submodule exige testes próprios de conexão/recovery; não executar merge sem resolver/revisar conflitos.
+
+## Licença e créditos
+
+GPL-3.0, conforme [LICENSE.txt](LICENSE.txt), com licenças das dependências preservadas. Fork de [Moonlight Android](https://github.com/moonlight-stream/moonlight-android), de Cameron Gutman, Diego Waxemberg, Aaron Neyer, Andrew Hennessy e demais contribuidores. [README original](docs/UPSTREAM_README.md) preservado. Não distribuir segredos nem chaves de assinatura no Git. Correspondência entre APK, commit e checksum acompanha cada release.
