@@ -1410,6 +1410,13 @@ public class MediaCodecDecoderRenderer extends VideoDecoderRenderer implements C
 
         // Flip stats windows roughly every second
         if (SystemClock.uptimeMillis() >= activeWindowVideoStats.measurementStartTimestamp + 1000) {
+            if (diagnostics != null) {
+                long rtt = MoonBridge.getEstimatedRttInfo();
+                if (rtt != 0) {
+                    diagnostics.record("estimated_network_rtt_ms", 0, rtt >> 32);
+                    diagnostics.record("estimated_network_variance_ms", 0, (int) rtt);
+                }
+            }
             if (prefs.enablePerfOverlay) {
                 VideoStats lastTwo = new VideoStats();
                 lastTwo.add(lastWindowVideoStats);

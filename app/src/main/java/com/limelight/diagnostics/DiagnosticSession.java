@@ -247,8 +247,10 @@ public final class DiagnosticSession {
         JSONObject metric = new JSONObject().put("n", values.length).put("origin", "direct local monotonic interval");
         for (double q : new double[]{.5, .9, .95, .99}) {
             double value = Statistics.percentile(values, q);
-            metric.put("p" + (int)(q * 100), Double.isNaN(value) ? JSONObject.NULL : value);
+            boolean enough = (q < .95 || values.length >= 100) && (q < .99 || values.length >= 1000);
+            metric.put("p" + (int)(q * 100), Double.isNaN(value) || !enough ? JSONObject.NULL : value);
         }
+        metric.put("tail_policy", "p95 n>=100; p99 n>=1000");
         output.put(name, metric);
     }
     private void handlerOnMain(Runnable runnable) { new Handler(context.getMainLooper()).post(runnable); }
