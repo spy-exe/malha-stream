@@ -3,6 +3,8 @@ import argparse
 from pathlib import Path
 import subprocess
 import uuid
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from benchmark.__main__ import probe, adb
 
 parser=argparse.ArgumentParser()

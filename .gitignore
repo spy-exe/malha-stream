@@ -52,3 +52,6 @@ benchmark/results/
 *.key
 .env
 .env.*
+.coverage
+.coverage.*
+coverage.xml
