@@ -21,4 +21,4 @@ cp "$malha_project/app/build/outputs/apk/androidTest/nonRoot/debug/app-nonRoot-d
 chmod 644 "$malha_project/artifacts/"*.apk
 cd "$malha_project/artifacts"
 sha256sum *.apk > SHA256SUMS
-git -C "$malha_project" rev-parse HEAD > SOURCE_COMMIT
+runuser -u malha -- git -C "$malha_project" rev-parse HEAD > SOURCE_COMMIT
