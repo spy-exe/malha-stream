@@ -1,6 +1,6 @@
 # Metodologia e estado de desempenho
 
-**Input-to-photon: não medido. Ganho: indisponível. Nenhuma melhoria verificada.** O Sunshine foi identificado na LAN; não há cliente TV ADB autorizado disponível nesta execução e não foi fornecido instrumento físico. APK e compilação no CT não medem latência do painel.
+**Input-to-photon: não medido. Ganho: indisponível. Nenhuma melhoria verificada.** O Sunshine foi identificado na LAN e o [Fire TV AFTSSS passou por instalação, interface e dois testes de integração](docs/benchmarks/DEVICE-AFTSSS.md). Ainda faltam sessões instrumentadas comparativas e instrumento físico. APK, testes de runtime e compilação no CT não medem latência do painel.
 
 ## Matriz
 

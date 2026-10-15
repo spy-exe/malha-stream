@@ -68,3 +68,6 @@ Artemis possui caminhos com várias opções opcionais e exceções amplamente t
 | 6 | Copias JNI, novas flags, scheduling ou novo renderer | Incerto / risco e custo maiores | Não habilitados; dependem das medições anteriores |
 
 Nenhuma hipótese foi aprovada como melhoria de desempenho. O experimento implementado está desativado por padrão, inclusive em hardware correspondente, e indisponível na release normal.
+# Atualização de hardware
+
+Após a pesquisa inicial, houve acesso ADB autorizado ao Amazon AFTSSS/sheldonp, Android 9/API28, plataforma mt8695. [Verificação e evidências](docs/benchmarks/DEVICE-AFTSSS.md). Isso identifica o alvo MediaTek e exclui o guard MiTV/Amlogic/API34 deste aparelho; desempenho e input-to-photon continuam pendentes.

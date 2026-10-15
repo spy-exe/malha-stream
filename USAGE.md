@@ -2,7 +2,7 @@
 
 ## Estado e arquivos entregues
 
-O laboratório está **BUILD READY**. Nenhum Fire Stick/Android TV foi instalado ou testado nesta execução. **DEVICE VERIFIED**, **BENCHMARKED** e **IMPROVEMENT VERIFIED** permanecem pendentes; a medição física está **BLOCKED** por acesso autorizado ao dispositivo e instrumento externo. Ganho de input-to-photon é indisponível.
+O laboratório está **BUILD READY**. O Fire TV AFTSSS em **10.10.1.2:5555** está [DEVICE VERIFIED](docs/benchmarks/DEVICE-AFTSSS.md), limitado à instalação, interface e dois testes de integração. O debug já foi instalado e preparado nesse aparelho. **BENCHMARKED** e **IMPROVEMENT VERIFIED** permanecem pendentes; a medição física está **BLOCKED** por sessões comparativas e instrumento externo. Ganho de input-to-photon é indisponível.
 
 [Baixar 0.1.0-dev](https://github.com/spy-exe/malha-stream/releases/tag/v0.1.0-dev), compilada do commit `695fa8f782264017a4203aad62d46e6b683ebfbe`:
 

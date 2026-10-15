@@ -13,9 +13,10 @@
 | Assinatura release e integridade dos três APKs | PASS | Assinatura v1/v2/v3, zipalign 16 KiB, SHA-256 local igual ao digest de cada asset publicado; `SOURCE_COMMIT` e identidade embarcada conferidos |
 | JVM | 12 testes PASS, cobertura 61/61 linhas (100%) | JaCoCo XML/HTML nos artefatos CI e CT |
 | Python puro | 14 testes PASS, 108/111 statements (97,3%) | Coverage XML, source analysis/events/pipeline; CLI/ADB/OpenCV são bindings |
-| Integração Android | NOT_RUN | APK de teste compilado; nenhum dispositivo autorizado conectado |
+| Integração Android no Fire TV AFTSSS | 2 testes PASS | [Verificação em dispositivo](DEVICE-AFTSSS.md): identidade/launcher e provider; não cobre streaming ou latência |
 | SSH do laboratório | PASS | Usuário malha, chave, sem sudo; systemd running, sem nesting |
 | ADB e mDNS no laboratório | Nenhum dispositivo | Log local `ct-access-and-adb.log` |
+| ADB posterior, Fire TV AFTSSS | Autorizado em 10.10.1.2:5555 | APKs instalados conferidos por SHA-256; interface debug executada; ver DEVICE-AFTSSS.md |
 | Extração OpenCV | Teste sintético de wrapper | Somente confiabilidade de software; não mede dispositivo nem input-to-photon |
 | Recuperação de CT antigo | PASS filesystem | CT 205 restaurado em CT 106 temporário desligado; arquivos conferidos e CT temporário removido. Boot do aplicativo antigo não foi testado. |
 

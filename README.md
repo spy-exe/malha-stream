@@ -2,7 +2,7 @@
 
 Laboratório de streaming Android TV/Fire OS baseado em Moonlight Android 12.2 e compatível com Sunshine existente.
 
-**Estado:** build e testes automatizados disponíveis. Validação em dispositivo e ganho de input-to-photon ainda bloqueados por acesso a TV/ADB e medição externa. Nenhum ganho físico é anunciado.
+**Estado:** BUILD READY e [DEVICE VERIFIED no Fire TV AFTSSS](docs/benchmarks/DEVICE-AFTSSS.md), limitado à instalação, interface e dois testes de integração. Sessões instrumentadas comparativas e medição externa ainda estão pendentes. Nenhum ganho físico é anunciado.
 
 - [Pesquisa e escolha de base](RESEARCH.md)
 - [Uso passo a passo: instalação, Sunshine, coleta e recuperação](USAGE.md)

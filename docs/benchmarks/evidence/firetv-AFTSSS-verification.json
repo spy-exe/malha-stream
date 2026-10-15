@@ -1,0 +1,136 @@
+{
+  "checked_at_utc": "2026-10-15T01:30:20.358413+00:00",
+  "device": {
+    "ro.product.manufacturer": "Amazon",
+    "ro.product.model": "AFTSSS",
+    "ro.product.device": "sheldonp",
+    "ro.build.version.release": "9",
+    "ro.build.version.sdk": "28",
+    "ro.board.platform": "mt8695",
+    "ro.hardware": "mt8695",
+    "ro.build.display.id": "PS7717.5741N"
+  },
+  "adb_endpoint": "10.10.1.2:5555",
+  "source_commit": "695fa8f782264017a4203aad62d46e6b683ebfbe",
+  "adb_authorization": "Accepted on device",
+  "installed_apks": {
+    "app.malhastream.unofficial": {
+      "sha256": "61354975f898ea71857ea2976f530d65603e716955d5175b42b56dd4118e35c3",
+      "matches_published_apk": true
+    },
+    "app.malhastream.debug": {
+      "sha256": "2d61bb96a5f52396fd6704dcbb740cb067f2af8fe41ae8ba54e72e4be9f4be8a",
+      "matches_published_apk": true
+    },
+    "app.malhastream.debug.test": {
+      "sha256": "25fe851e4bf55ae2d372cf4a7c3b05a95c717a52562889c10d20a616b3a18a13",
+      "matches_published_apk": true
+    }
+  },
+  "integration_tests": {
+    "result": "PASS",
+    "tests": 2,
+    "scope": [
+      "Parallel package identity and TV launcher resolution",
+      "Private export provider, traversal and write rejection"
+    ],
+    "log": "firetv-AFTSSS-instrumentation.log"
+  },
+  "existing_release_activity_observed": "app.malhastream.unofficial/com.limelight.Game",
+  "agent_stream_sessions": "NOT_RUN",
+  "agent_ui_launch": "PASS: debug PcView resumed on real Fire TV",
+  "input_to_photon_events": 0,
+  "input_to_photon_gain_percent": null,
+  "comparative_hardware_benchmark": "NOT_RUN",
+  "performance_state": "BLOCKED: instrumented stream sessions and external measurement required",
+  "status": "DEVICE VERIFIED",
+  "device_verification_scope": "Installation, launcher UI and 2 runtime smoke/provider checks; no stream/audio/gamepad comparison or photon benchmark",
+  "screenshot": "firetv-AFTSSS-debug-launch.png",
+  "decoder_declarations": [
+    {
+      "name": "OMX.MTK.VIDEO.DECODER.HEVC",
+      "mime": "video/hevc",
+      "limits": [
+        {
+          "name": "size",
+          "min": "64x64",
+          "max": "1920x1088"
+        },
+        {
+          "name": "alignment",
+          "value": "1x1"
+        },
+        {
+          "name": "block-size",
+          "value": "16x16"
+        },
+        {
+          "name": "blocks-per-second",
+          "range": "1-2211840"
+        },
+        {
+          "name": "frame-rate",
+          "range": "1-60"
+        },
+        {
+          "name": "bitrate",
+          "range": "1-157286400"
+        },
+        {
+          "name": "concurrent-instances",
+          "max": "4"
+        }
+      ]
+    },
+    {
+      "name": "OMX.MTK.VIDEO.DECODER.AVC",
+      "mime": "video/avc",
+      "limits": [
+        {
+          "name": "size",
+          "min": "64x64",
+          "max": "1920x1088"
+        },
+        {
+          "name": "alignment",
+          "value": "1x1"
+        },
+        {
+          "name": "block-size",
+          "value": "16x16"
+        },
+        {
+          "name": "blocks-per-second",
+          "range": "1-2211840"
+        },
+        {
+          "name": "frame-rate",
+          "range": "1-60"
+        },
+        {
+          "name": "bitrate",
+          "range": "1-157286400"
+        },
+        {
+          "name": "concurrent-instances",
+          "max": "4"
+        }
+      ]
+    }
+  ],
+  "decoder_declarations_origin": "/vendor/etc/media_codecs_mediatek_video.xml; static driver declarations, not runtime selection or measured throughput",
+  "selected_stream_decoder": null,
+  "standard_low_latency_feature_query": "Unavailable at API 28; vendor support is not inferred",
+  "diagnostic_configuration": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 60,
+    "codec": "h264",
+    "bitrate_kbps": 20000,
+    "hdr": false,
+    "profile": "upstream",
+    "amlogic_experiment": false,
+    "recording": true
+  },
+  "pairing": "Pending Sunshine owner approval; PIN excluded from published evidence"
+}
